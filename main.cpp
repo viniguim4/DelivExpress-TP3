@@ -44,6 +44,35 @@ void solve_brute_force(Graph* graph) {
     std::cout << "\n";
 }
 
+void solve_dynamic_programming(Graph* graph) {
+    Solution best_solution;
+    
+    // Testa cada cidade como ponto inicial
+    for (int start = 0; start < graph->getV(); ++start) {
+        Solution current = graph->heldKarp(start);
+        if (current.total_distance < best_solution.total_distance) {
+            best_solution = current;
+        }
+    }
+    
+    // Imprime a solução
+    if (best_solution.total_distance == INF) {
+        std::cout << "Não existe solução!\n";
+        return;
+    }
+    
+    std::cout << best_solution.total_distance << "\n";
+    
+    // Imprime o caminho usando os nomes das cidades
+    for (size_t i = 0; i < (best_solution.path.size() - 1); ++i) {
+        std::cout << graph->getCityName(best_solution.path[i]);
+        if (i < best_solution.path.size() - 2) {
+            std::cout << " ";
+        }
+    }
+    std::cout << "\n";
+}
+
 int main() {
     // Lê os dados de entrada
     InputData data = parse_input();
@@ -54,8 +83,7 @@ int main() {
             solve_brute_force(data.graph);
             break;
         case 'd':
-            // TODO: Implementar programação dinâmica
-            std::cout << "Programação dinâmica ainda não implementada\n";
+            solve_dynamic_programming(data.graph);
             break;
         case 'g':
             // TODO: Implementar algoritmo guloso

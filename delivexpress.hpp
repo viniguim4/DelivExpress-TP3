@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <unordered_map>
 #define INF 2147483647
 
 // Estrutura para armazenar a solução
@@ -14,12 +15,23 @@ struct Solution {
     Solution() : total_distance(INF) {}
 };
 
+// Hash para o par estado-vértice usado na PD
+struct StateHash {
+    size_t operator()(const std::pair<int, int>& p) const {
+        return std::hash<int>()(p.first) ^ std::hash<int>()(p.second);
+    }
+};
+
 class Graph {
 private:
     int V;                                  // Número de vértices
     std::vector<std::vector<int>> adj;      // Matriz de adjacência
     std::vector<std::string> city_names;    // Nomes das cidades
     std::vector<int> city_index;            // Mapa de índices das cidades
+
+    // Cache para programação dinâmica
+    std::unordered_map<std::pair<int, int>, int, StateHash> dp_cache;
+    std::unordered_map<std::pair<int, int>, int, StateHash> parent;
 
 public:
     Graph(int vertices);
@@ -42,14 +54,21 @@ public:
     // Retorna a lista de nomes das cidades
     const std::vector<std::string>& getCityNames() const { return city_names; }
     
-    // Algoritmo de força bruta para encontrar o menor caminho
+    // Algoritmo de força bruta
     Solution bruteForce(int start_city);
+    
+    // Algoritmo de Held-Karp (Programação Dinâmica)
+    Solution heldKarp(int start_city);
     
 private:
     // Função auxiliar recursiva para o algoritmo de força bruta
     void bruteForceUtil(int start_city, std::vector<bool>& visited, 
                        std::vector<int>& current_path, int current_distance,
                        Solution& best_solution);
+                       
+    // Funções auxiliares para o algoritmo de Held-Karp
+    int tsp(int pos, int visited, int start_city);
+    void reconstructPath(Solution& solution, int start_city);
 };
 
 // Estrutura para armazenar os dados de entrada

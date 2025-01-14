@@ -121,6 +121,105 @@ Solution Graph::bruteForce(int start_city) {
     return best_solution;
 }
 
+// Implementação do algoritmo de Held-Karp
+int Graph::tsp(int pos, int visited, int start_city) {
+    // Se já visitamos todas as cidades
+    if (visited == ((1 << V) - 1)) {
+        // Verifica se é possível voltar à cidade inicial
+        if (adj[pos][start_city] == INF) {
+            return INF;  // Não há caminho de volta
+        }
+        return adj[pos][start_city];
+    }
+    
+    // Verifica se este estado já foi calculado
+    std::pair<int, int> state = {pos, visited};
+    if (dp_cache.find(state) != dp_cache.end()) {
+        return dp_cache[state];
+    }
+    
+    int ans = INF;
+    bool found_next = false;  // Flag para verificar se encontramos algum próximo caminho válido
+    
+    // Tenta visitar cada cidade não visitada
+    for (int city = 0; city < V; city++) {
+        if (!(visited & (1 << city))) {  // Se a cidade não foi visitada
+            if (adj[pos][city] != INF) {  // Se existe caminho até esta cidade
+                int next_cost = tsp(city, visited | (1 << city), start_city);
+                if (next_cost != INF) {  // Se existe um caminho válido a partir desta cidade
+                    found_next = true;
+                    int newAns = adj[pos][city] + next_cost;
+                    if (newAns < ans) {
+                        ans = newAns;
+                        parent[state] = city;  // Guarda o próximo passo do caminho ótimo
+                    }
+                }
+            }
+        }
+    }
+    
+    // Se não encontramos nenhum próximo caminho válido, este caminho não leva a uma solução
+    if (!found_next) {
+        return dp_cache[state] = INF;
+    }
+    
+    return dp_cache[state] = ans;
+}
+
+void Graph::reconstructPath(Solution& solution, int start_city) {
+    std::vector<int>& path = solution.path;
+    path.clear();
+    path.push_back(start_city);
+    
+    int pos = start_city;
+    int visited = 1 << start_city;
+    
+    // Reconstrói o caminho usando a tabela parent
+    while (visited != ((1 << V) - 1)) {
+        std::pair<int, int> state = {pos, visited};
+        // Verifica se existe próximo passo
+        if (parent.find(state) == parent.end()) {
+            // Caminho inválido
+            solution.total_distance = INF;
+            path.clear();
+            return;
+        }
+        int next_city = parent[state];
+        path.push_back(next_city);
+        visited |= (1 << next_city);
+        pos = next_city;
+    }
+    
+    // Verifica se é possível voltar à cidade inicial
+    if (adj[pos][start_city] == INF) {
+        solution.total_distance = INF;
+        path.clear();
+        return;
+    }
+    
+    // Adiciona a volta à cidade inicial
+    path.push_back(start_city);
+}
+
+Solution Graph::heldKarp(int start_city) {
+    Solution solution;
+    
+    // Limpa os caches
+    dp_cache.clear();
+    parent.clear();
+    
+    // Calcula a menor distância
+    solution.total_distance = tsp(start_city, 1 << start_city, start_city);
+    
+    // Se encontrou uma solução válida
+    if (solution.total_distance != INF) {
+        // Reconstrói o caminho
+        reconstructPath(solution, start_city);
+    }
+    
+    return solution;
+}
+
 InputData parse_input() {
     InputData data;
     
