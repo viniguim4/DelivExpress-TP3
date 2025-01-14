@@ -220,6 +220,71 @@ Solution Graph::heldKarp(int start_city) {
     return solution;
 }
 
+int Graph::findNearestNeighbor(int current_city, const std::vector<bool>& visited) const {
+    int nearest = -1;
+    int min_distance = INF;
+    
+    // Procura a cidade não visitada mais próxima
+    for (int city = 0; city < V; city++) {
+        if (!visited[city] && adj[current_city][city] != INF) {
+            if (adj[current_city][city] < min_distance) {
+                min_distance = adj[current_city][city];
+                nearest = city;
+            }
+        }
+    }
+    
+    return nearest;
+}
+
+Solution Graph::nearestNeighbor(int start_city) {
+    Solution solution;
+    std::vector<bool> visited(V, false);
+    int current_city = start_city;
+    int total_distance = 0;
+    
+    // Marca a cidade inicial como visitada e a adiciona ao caminho
+    visited[start_city] = true;
+    solution.path.push_back(start_city);
+    
+    // Visita todas as cidades restantes
+    for (int i = 1; i < V; i++) {
+        // Encontra a cidade não visitada mais próxima
+        int next_city = findNearestNeighbor(current_city, visited);
+        
+        // Se não encontrou próxima cidade, não há caminho hamiltoniano
+        if (next_city == -1) {
+            solution.total_distance = INF;
+            solution.path.clear();
+            return solution;
+        }
+        
+        // Adiciona a distância até a próxima cidade
+        total_distance += adj[current_city][next_city];
+        
+        // Marca como visitada e adiciona ao caminho
+        visited[next_city] = true;
+        solution.path.push_back(next_city);
+        
+        // Atualiza a cidade atual
+        current_city = next_city;
+    }
+    
+    // Verifica se é possível voltar à cidade inicial
+    if (adj[current_city][start_city] == INF) {
+        solution.total_distance = INF;
+        solution.path.clear();
+        return solution;
+    }
+    
+    // Adiciona a distância de volta à cidade inicial
+    total_distance += adj[current_city][start_city];
+    solution.path.push_back(start_city);
+    solution.total_distance = total_distance;
+    
+    return solution;
+}
+
 InputData parse_input() {
     InputData data;
     

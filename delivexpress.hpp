@@ -60,6 +60,9 @@ public:
     // Algoritmo de Held-Karp (Programação Dinâmica)
     Solution heldKarp(int start_city);
     
+    // Algoritmo Guloso (Vizinho Mais Próximo)
+    Solution nearestNeighbor(int start_city);
+    
 private:
     // Função auxiliar recursiva para o algoritmo de força bruta
     void bruteForceUtil(int start_city, std::vector<bool>& visited, 
@@ -69,6 +72,9 @@ private:
     // Funções auxiliares para o algoritmo de Held-Karp
     int tsp(int pos, int visited, int start_city);
     void reconstructPath(Solution& solution, int start_city);
+    
+    // Função auxiliar para encontrar o vizinho mais próximo não visitado
+    int findNearestNeighbor(int current_city, const std::vector<bool>& visited) const;
 };
 
 // Estrutura para armazenar os dados de entrada
